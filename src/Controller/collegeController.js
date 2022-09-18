@@ -19,14 +19,18 @@ const isValidRequest = function (object) {
     }
 }
 const isValidLink = function (link) {
-     const url =/(http|https):\/\/.+\.(jpg|jpeg|png)$/
-  
-   return url.test(link)
-        
+    const url = /(http|https):\/\/.+\.(jpg|jpeg|png)$/
+
+    return url.test(link)
+
 }
 
 const createCollege = async function (req, res) {
     try {
+        let query = req.query
+        if (Object.keys(query).length > 0) {
+            return res.status(400).send({ status: false, message: "Bad request" })
+        }
         let data = req.body
         if (!isValidRequest(data)) {
             return res
@@ -40,7 +44,7 @@ const createCollege = async function (req, res) {
         if (!isValidString(name)) {
             return res.status(400).send({ status: false, message: "Name should be string" })
         }
-        let checkName = await CollegeModel.findOne({name: name})
+        let checkName = await CollegeModel.findOne({ name: name })
         if (checkName) {
             return res.status(400).send({ status: false, message: "College already exists" })
         }
@@ -51,11 +55,11 @@ const createCollege = async function (req, res) {
             return res.status(400).send({ status: false, message: "Please provide logo" })
         }
         if (!isValidLink(logoLink)) {
-                return res.status(400).send({ message: "Enter a valid url" })
-            }
-            let LogoLink = logoLink.trim() 
-            req.body.logoLink=LogoLink
-        
+            return res.status(400).send({ message: "Enter a valid url" })
+        }
+        let LogoLink = logoLink.trim()
+        req.body.logoLink = LogoLink
+
         const newCollege = await CollegeModel.create(data)
         return res.status(201).send({ status: true, data: newCollege })
     } catch (error) {
@@ -65,14 +69,15 @@ const createCollege = async function (req, res) {
 }
 
 const collegeDetails = async function (req, res) {
-    try { 
-         let queryParams = req.query
+    try {
+        let queryParams = req.query
         let collegeName = queryParams.collegeName
-
-        if(!isValidRequest(queryParams)){
-            return res.status(400).send({ status: false, message: "please provide queryParams"})
+        if (!isValidRequest(queryParams)) {
+            return res.status(400).send({ status: false, message: "please provide queryParams" })
         }
-
+        if (!collegeName) {
+            return res.status.send({ status: false, message: "Invalid query" })
+        }
         if (!isValidString(collegeName)) {
             return res.status(400).send({ status: false, message: "Please Enter the valid College Name" })
         }
@@ -81,11 +86,11 @@ const collegeDetails = async function (req, res) {
             return res.status(404).send({ status: false, message: "College not found" })
         }
         let collageDetails =
-            {
-                name: college.name,
-                fullName: college.fullName,
-                logolink: college.logoLink
-            }
+        {
+            name: college.name,
+            fullName: college.fullName,
+            logolink: college.logoLink
+        }
         const getCollegeId = college._id;
         const internData = await InternModel.find({ isDeleted: false, collegeId: getCollegeId }).select({ name: 1, email: 1, mobile: 1 })
 

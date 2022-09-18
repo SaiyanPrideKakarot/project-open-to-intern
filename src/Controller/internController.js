@@ -24,6 +24,10 @@ const isValidName = function (name) {
 
 const createIntern = async function (req, res) {
     try {
+        let query = req.query
+        if (Object.keys(query).length > 0) {
+            return res.status(400).send({status: false, message: "Bad request"})
+        }
         let data = req.body
         let { name, email, mobile, collegeName } = data
         if (Object.keys(data).length < 1) {
